@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "esbuild --watch src/* --outdir=dist --bundle",
-    "backend": "esbuild --watch --bundle --platform=node program.ts --outfile=program.js"
+    "client": "esbuild --watch src/client/* --outdir=dist/client --bundle",
+    "backend": "esbuild --watch src/backend/* --bundle --platform=node --target=node12 --outdir=dist/backend"
   },
   "keywords": [],
   "author": "",

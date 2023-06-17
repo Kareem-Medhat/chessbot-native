@@ -7,12 +7,12 @@
     "default_title": "Toggle bot"
   },
 	"background": {
-		"service_worker": "dist/background.js"
+		"service_worker": "dist/client/background.js"
 	},
   "content_scripts": [
     {
-      "js": ["dist/content.js"],
-      "matches": ["https://www.chess.com/play/computer", "https://www.chess.com/play/online", "https://www.chess.com/game/live/*"]
+      "js": ["dist/client/content.js"],
+      "matches": ["https://www.chess.com/play/computer", "https://www.chess.com/play/online*", "https://www.chess.com/game/*"]
     }
   ],
   "permissions": ["nativeMessaging", "storage"],
