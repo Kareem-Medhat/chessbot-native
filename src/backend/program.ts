@@ -12,8 +12,8 @@ function saveCache() {
 }
 
 type State = {
-	id: any;
-	requestID: any;
+	session_id: any;
+	request_id: any;
 	lastMessage: string | null;
 	uci: string[];
 	cachedMove: BestMove | null;
@@ -37,11 +37,11 @@ function createStdoutHandler(state: State) {
 
 				if (markAsLast(state, { move, depth })) {
 					const node = getNode(cache, state.uci);
-					addPV(node, info.pv.slice(0, 3), depth);
+					addPV(node, info.pv.slice(0, Math.min(3, depth)), depth);
 					sendMessage(
 						encodeMessage({
-							requestID: state.requestID,
-							sessionID: state.id,
+							request_id: state.request_id,
+							session_id: state.session_id,
 							move,
 							depth,
 						})
@@ -170,12 +170,12 @@ function getUCIFromPGN(pgn: string): Promise<string[]> {
 }
 
 async function handleMessage(message: any) {
-	let session = sessions.get(message.sessionID);
+	let session = sessions.get(message.session_id);
 	if (!session) {
 		const state: State = {
-			id: message.sessionID,
+			session_id: message.session_id,
 			lastMessage: null,
-			requestID: null,
+			request_id: null,
 			stockfish: spawn("stockfish"),
 			uci: [],
 			cachedMove: null
@@ -184,13 +184,13 @@ async function handleMessage(message: any) {
 		state.stockfish.stdin.write("setoption name Threads value 6\n");
 		state.stockfish.stdin.write("setoption name Hash value 12\n");
 		state.stockfish.stdout.on("data", createStdoutHandler(state));
-		sessions.set(message.sessionID, state);
+		sessions.set(message.session_id, state);
 		session = state;
 	}
 
 	switch (message.type) {
 		case "FIND_MOVE":
-			session.requestID = message.id;
+			session.request_id = message.request_id;
 			let uci = await getUCIFromPGN(message.pgn);
 			session.uci = uci;
 			lookupInCache(session);
@@ -204,7 +204,7 @@ async function handleMessage(message: any) {
 			break;
 		case "SESSION_ENDED":
 			session.stockfish.kill();
-			sessions.delete(session.id);
+			sessions.delete(session.session_id);
 			saveCache();
 			break;
 	}
@@ -216,8 +216,8 @@ function lookupInCache(state: State) {
 		state.cachedMove = node.bestmove;
 		sendMessage(
 			encodeMessage({
-				requestID: state.requestID,
-				sessionID: state.id,
+				request_id: state.request_id,
+				session_id: state.session_id,
 				move: node.bestmove.node.move,
 				depth: node.bestmove.depth,
 			})

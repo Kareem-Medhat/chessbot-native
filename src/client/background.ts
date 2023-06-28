@@ -10,8 +10,8 @@ type State = {
 const handleNative = (state: State) => async (message: any) => {
   if (
     state.isOn &&
-    state.id === message.sessionID &&
-    state.requestID === message.requestID
+    state.id === message.session_id &&
+    state.requestID === message.request_id
   ) {
     chrome.action.setBadgeText({
       text: String(message.depth),
@@ -48,7 +48,7 @@ chrome.runtime.onConnect.addListener(function (port) {
   port.onDisconnect.addListener(async () => {
     nativePort.postMessage({
       type: "SESSION_ENDED",
-      sessionID: state.id,
+      session_id: state.id,
     });
     nativePort.onMessage.removeListener(handleN);
     chrome.action.onClicked.removeListener(handleC);
@@ -60,7 +60,7 @@ chrome.runtime.onConnect.addListener(function (port) {
     switch (message.type) {
       case "MOVE_PLAYED":
         state.requestID++;
-        nativePort.postMessage({ type: "STOP", sessionID: state.id });
+        nativePort.postMessage({ type: "STOP", session_id: state.id });
         await chrome.action.setBadgeText({
           text: "ON",
           tabId: state.id,
@@ -84,8 +84,8 @@ async function findMove({ state, pgn }: { state: State; pgn: string }) {
   nativePort.postMessage({
     type: "FIND_MOVE",
     pgn,
-    id: state.requestID,
-    sessionID: state.id,
+    request_id: state.requestID,
+    session_id: state.id,
   });
 }
 
@@ -121,7 +121,7 @@ async function deactivate({ state }: { state: State }) {
   state.requestID++;
   nativePort.postMessage({
     type: "STOP",
-    sessionID: state.id,
+    session_id: state.id,
   });
 }
 

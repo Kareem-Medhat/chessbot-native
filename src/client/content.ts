@@ -156,28 +156,22 @@ function toggleStart(router: Router) {
 function showMove(message: { move: string }) {
   const chessBoard = document.querySelector("chess-board")! as HTMLElement;
   clearBoard(chessBoard);
+  const { x: boardX, y: boardY } = chessBoard.getBoundingClientRect();
   const isFlipped = chessBoard.classList.contains("flipped");
   const [srcPeriod, srcRank, destPeriod, destRank, pieceToBe] = message.move;
-  const piece = chessBoard.querySelector(
-    `.piece.square-${periodToNumber(srcPeriod)}${srcRank}`
-  )! as HTMLElement;
-  if (!piece) return;
-  const originalTransform = piece.style.transform;
-  piece.style.transform = "";
-  const {
-    x: pieceX,
-    y: pieceY,
-    width: pieceWidth,
-    height: pieceHeight,
-  } = piece.getBoundingClientRect();
-  piece.style.transform = originalTransform;
-  const diffX = isFlipped
-    ? periodToNumber(srcPeriod) - periodToNumber(destPeriod)
-    : periodToNumber(destPeriod) - periodToNumber(srcPeriod);
-  const diffY = isFlipped ? +srcRank - +destRank : +destRank - +srcRank;
+  const className = `.piece.square-${periodToNumber(srcPeriod)}${srcRank}`;
+  const piece = chessBoard.querySelector(className)! as HTMLElement;
+  if (!piece) {
+    console.warn(`no piece found with selector "${className}"`);
+    return;
+  }
+  const { width: pieceWidth, height: pieceHeight } = piece.getBoundingClientRect();
 
-  const destX = pieceX + pieceWidth * diffX + pieceWidth / 2;
-  const destY = pieceY - pieceHeight * (diffY - 1) - pieceHeight / 2;
+  const diffX = isFlipped ? 8 - periodToNumber(destPeriod): periodToNumber(destPeriod) - 1;
+  const diffY = isFlipped ? +destRank - 1 : 8 - +destRank;
+
+  const destX = boardX + pieceWidth * diffX + pieceWidth / 2;
+  const destY = boardY + pieceHeight * diffY + pieceHeight / 2;
 
   piece.style.backgroundColor = "red";
   piece.classList.add("highlighted-by-kareem");

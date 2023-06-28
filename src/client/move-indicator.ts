@@ -1,4 +1,4 @@
-import { Coords, getCoords } from "./get-coords";
+import { Coords } from "./get-coords";
 
 const icons: { [name: string]: string } = {
   default: "🟢",
@@ -10,14 +10,12 @@ const icons: { [name: string]: string } = {
 
 export class MoveIndicator {
   private element: HTMLElement;
-  private baseCoords: Coords;
 
   constructor() {
     this.element = document.createElement("div");
     this.element.innerText = icons.default;
     this.initAppearance();
     this.mount();
-    this.baseCoords = getCoords(this.element);
   }
 
   private initAppearance() {
@@ -48,9 +46,8 @@ export class MoveIndicator {
   centerAt(coords: Coords, opts: { fontSize: string }) {
     this.element.style.fontSize = opts.fontSize;
     const { width, height } = this.element.getBoundingClientRect();
-    this.element.style.transform = `translateX(${
-      coords[0] - this.baseCoords[0] - width / 2
-    }px) translateY(${coords[1] - this.baseCoords[1] - height / 2}px)`;
+    this.element.style.top = `${coords[1] - height/2}px`;
+    this.element.style.left = `${coords[0] - width/2}px`;
   }
 
   show() {
