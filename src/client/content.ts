@@ -7,25 +7,22 @@ const port = initPort();
 const indicator = new MoveIndicator();
 
 const clearBoard = (board: HTMLElement) => {
-  const highlighted = board.querySelector(
-    ".highlighted-by-kareem"
-  ) as HTMLElement | null;
+  const highlighted = board.querySelector(".made-by-bot") as HTMLElement | null;
   if (highlighted) {
-    highlighted.style.backgroundColor = "";
-    highlighted.classList.remove("highlighted-by-kareem");
+    highlighted.remove();
   }
   indicator.hide();
   indicator.setDefaultIcon();
 };
 
 function didMatchStart(sidebar: HTMLElement) {
-  return !!sidebar.querySelector("vertical-move-list");
+  return !!sidebar.querySelector("wc-vertical-move-list");
 }
 
 function didMatchEnd(sidebar: HTMLElement): Element | false {
   return (
     didMatchStart(sidebar) &&
-    (sidebar.querySelector("vertical-move-list .game-result") || false)
+    (sidebar.querySelector("wc-vertical-move-list .game-result") || false)
   );
 }
 
@@ -49,21 +46,31 @@ function waitForMatchStart(sidebar: HTMLElement) {
   });
 }
 
+function moveFromNode(node: HTMLElement) {
+	if (node.childNodes.length > 1) {
+		return Array.from(node.childNodes).map((node) => {
+			return node instanceof HTMLElement ? node.dataset.figurine : node.nodeValue;
+		}).join("");
+	}
+
+	return node.innerText;
+}
+
 function readMoves(sidebar: HTMLElement): {
   pgn: string;
   nextTurn: "black" | "white";
 } {
-  const moves = sidebar.querySelector("vertical-move-list");
+  const moves = sidebar.querySelector("wc-vertical-move-list");
   let pgn = "";
   let nextTurn: "black" | "white" = "white";
   for (const move of moves?.children || []) {
     const moveNumber = (move as HTMLElement).dataset.wholeMoveNumber;
     let [white, black] = move.querySelectorAll(".node");
 
-    pgn += `${moveNumber}. ${(white as HTMLElement).innerText} `;
+    pgn += `${moveNumber}. ${moveFromNode(white as HTMLElement)} `;
 
     if (black) {
-      pgn += `${(black as HTMLElement).innerText} `;
+      pgn += `${moveFromNode(black as HTMLElement)} `;
     } else {
       nextTurn = "black";
       break;
@@ -79,7 +86,7 @@ function readMoves(sidebar: HTMLElement): {
 async function start(sidebar: HTMLElement) {
   await waitForMatchStart(sidebar);
   console.log("Match started");
-  const chessboard = document.querySelector("chess-board")! as HTMLElement;
+  const chessboard = document.querySelector("wc-chess-board")! as HTMLElement;
   const isWhite = !chessboard.classList.contains("flipped");
 
   const moves = readMoves(sidebar);
@@ -143,7 +150,7 @@ function toggleStart(router: Router) {
   const onUnlisten = (observer: MutationObserver) => {
     observer.disconnect();
     const chessboard = document.querySelector(
-      "chess-board"
+      "wc-chess-board"
     ) as HTMLElement | null;
     if (chessboard) {
       clearBoard(chessboard);
@@ -151,30 +158,33 @@ function toggleStart(router: Router) {
     router.unhandle("UNLISTEN_MOVES");
     router.handle("LISTEN_MOVES", onListen);
   };
-  onListen();
+  onListen().then(() => console.log(router));
 }
 function showMove(message: { move: string }) {
-  const chessBoard = document.querySelector("chess-board")! as HTMLElement;
+  const chessBoard = document.querySelector("wc-chess-board")! as HTMLElement;
   clearBoard(chessBoard);
   const { x: boardX, y: boardY } = chessBoard.getBoundingClientRect();
   const isFlipped = chessBoard.classList.contains("flipped");
   const [srcPeriod, srcRank, destPeriod, destRank, pieceToBe] = message.move;
-  const className = `.piece.square-${periodToNumber(srcPeriod)}${srcRank}`;
-  const piece = chessBoard.querySelector(className)! as HTMLElement;
-  if (!piece) {
-    console.warn(`no piece found with selector "${className}"`);
-    return;
-  }
-  const { width: pieceWidth, height: pieceHeight } = piece.getBoundingClientRect();
+  const className = `square-${periodToNumber(srcPeriod)}${srcRank}`;
+  const highlight = document.createElement("div");
+  highlight.classList.add("highlight", className, "made-by-bot");
+  highlight.style.backgroundColor = "rgb(0, 255, 0)";
+  // highlight.style.backgroundColor = "rgb(235, 97, 80)";
+  highlight.style.opacity = "1";
+  // svg.insertAdjacentElement("afterend", highlight);
+  chessBoard.insertBefore(highlight, chessBoard.childNodes[2]);
 
-  const diffX = isFlipped ? 8 - periodToNumber(destPeriod): periodToNumber(destPeriod) - 1;
+  const { width: pieceWidth, height: pieceHeight } =
+    highlight.getBoundingClientRect();
+
+  const diffX = isFlipped
+    ? 8 - periodToNumber(destPeriod)
+    : periodToNumber(destPeriod) - 1;
   const diffY = isFlipped ? +destRank - 1 : 8 - +destRank;
 
   const destX = boardX + pieceWidth * diffX + pieceWidth / 2;
   const destY = boardY + pieceHeight * diffY + pieceHeight / 2;
-
-  piece.style.backgroundColor = "red";
-  piece.classList.add("highlighted-by-kareem");
 
   if (pieceToBe) {
     indicator.setIcon(pieceToBe);

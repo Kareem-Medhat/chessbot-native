@@ -1,21 +1,25 @@
-export function waitForElement(selector: string): Promise<HTMLElement> {
+export function waitForElementInParent(parent: Element, selector: string): Promise<HTMLElement> {
   return new Promise((resolve) => {
-    const element = document.querySelector(selector) as HTMLElement;
+    const element = parent.querySelector(selector) as HTMLElement;
     if (element) {
       return resolve(element);
     }
 
     const observer = new MutationObserver(() => {
-      const element = document.querySelector(selector) as HTMLElement;
+      const element = parent.querySelector(selector) as HTMLElement;
       if (element) {
         resolve(element);
         observer.disconnect();
       }
     });
 
-    observer.observe(document.body, {
+    observer.observe(parent, {
       childList: true,
       subtree: true,
     });
   });
+}
+
+export function waitForElement(selector: string): Promise<HTMLElement> {
+  return waitForElementInParent(document.body, selector);
 }

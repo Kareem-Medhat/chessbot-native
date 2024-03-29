@@ -3,7 +3,7 @@ mod controller;
 mod messages;
 mod pgn;
 mod info_parser;
-// mod ktree;
+mod opening;
 
 use anyhow::Result;
 

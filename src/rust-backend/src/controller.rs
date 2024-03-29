@@ -1,7 +1,9 @@
 use anyhow::Result;
+use rand::{rngs::ThreadRng, Rng};
+use shakmaty::zobrist::{Zobrist64, ZobristHash};
 use std::{
     collections::HashMap,
-    io::{BufRead, Write, BufReader},
+    io::{BufRead, BufReader, Write},
     process::{Child, ChildStdout, Command, Stdio},
     sync::{Arc, Mutex},
     thread,
@@ -10,17 +12,22 @@ use std::{
 use crate::{
     info_parser, message_handler,
     messages::{FindMoveMessage, FindMoveResponse, Message, SessionEndedMessage, StopMessage},
-    pgn::get_fen,
+    opening::Openings,
+    pgn::get_position,
 };
 
 pub struct Controller {
     instances: HashMap<usize, InstanceState>,
+    book: Openings,
+    rng: ThreadRng,
 }
 
 impl Controller {
     pub fn new() -> Self {
         Self {
             instances: HashMap::new(),
+            book: Openings::init(),
+            rng: rand::thread_rng(),
         }
     }
 
@@ -34,14 +41,45 @@ impl Controller {
     }
 
     fn find_move(&mut self, message: FindMoveMessage) -> Result<()> {
-        if let Some(instance) = self.instances.get_mut(&message.session_id) {
-            instance.set_request_id(message.request_id);
-            instance.go(message.pgn)?;
-        } else {
-            let mut instance = InstanceState::new(message.session_id, message.request_id)?;
-            instance.go(message.pgn)?;
-            self.instances.insert(message.session_id, instance);
+        let position = get_position(&message.pgn);
+        let position_hash: u64 = position
+            .zobrist_hash::<Zobrist64>(shakmaty::EnPassantMode::Legal)
+            .0;
+
+        let instance = match self.instances.get_mut(&message.session_id) {
+            Some(instance) => {
+                instance.stop()?;
+                instance
+            }
+            None => {
+                let instance = InstanceState::new(message.session_id, message.request_id)?;
+                self.instances.insert(message.session_id, instance);
+                self.instances.get_mut(&message.session_id).unwrap()
+            }
         };
+
+        match self.book.get_moves(&position_hash) {
+            Some(moves) => {
+                let good_moves: Vec<_> = moves.iter().filter(|m| m.weight > 100).collect();
+                let r#move = match good_moves.len() {
+                    0 => &moves[self.rng.gen_range(0..std::cmp::min(moves.len(), 3))],
+                    n => good_moves[self.rng.gen_range(0..n)],
+                };
+                let response = FindMoveResponse {
+                    depth: 255,
+                    r#move: r#move.r#move.to_owned(),
+                    request_id: message.request_id,
+                    session_id: message.session_id,
+                };
+                message_handler::send_message(serde_json::to_vec(&response).unwrap())?;
+            }
+            None => {
+                let fen =
+                    shakmaty::fen::Fen::from_position(position, shakmaty::EnPassantMode::Legal);
+                instance.set_request_id(message.request_id);
+                instance.go(fen.to_string())?;
+            }
+        }
         Ok(())
     }
 
@@ -61,6 +99,7 @@ impl Controller {
     }
 }
 
+#[derive(Debug)]
 pub struct InstanceState {
     stockfish: Child,
     session_id: Arc<usize>,
@@ -94,8 +133,11 @@ impl InstanceState {
         thread::spawn(move || -> Result<()> {
             let mut buffer = String::with_capacity(512);
             while let Ok(n) = stdout.read_line(&mut buffer) {
-                let line = &buffer[0..n-1];
-                if let Some(info) = info_parser::Info::parse_info(line) {
+                if n == 0 {
+                    break;
+                }
+                let line = &buffer[0..n - 1];
+                if let Some(info) = info_parser::Info::parse_info(line).ok() {
                     let request_id = request_id.lock().unwrap();
                     let response = FindMoveResponse {
                         r#move: info.pv[0].to_string(),
@@ -111,9 +153,9 @@ impl InstanceState {
         });
     }
 
-    fn go<T: AsRef<str>>(&mut self, pgn: T) -> Result<()> {
+    fn go<T: AsRef<str>>(&mut self, fen: T) -> Result<()> {
         let stdin = self.stockfish.stdin.as_mut().unwrap();
-        stdin.write_all(format!("position fen {}\ngo\n", get_fen(pgn)).as_bytes())?;
+        stdin.write_all(format!("position fen {}\ngo\n", fen.as_ref()).as_bytes())?;
         stdin.flush()?;
         Ok(())
     }
@@ -127,6 +169,7 @@ impl InstanceState {
 
     fn kill(mut self) -> Result<()> {
         self.stockfish.kill()?;
+        self.stockfish.wait()?;
         Ok(())
     }
 
