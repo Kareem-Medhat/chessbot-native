@@ -16,8 +16,5 @@
     "chrome-types": "^0.1.194",
     "esbuild": "^0.17.19",
     "typescript": "^5.0.4"
-  },
-  "dependencies": {
-    "node-native-messaging-host": "^1.0.5"
   }
 }

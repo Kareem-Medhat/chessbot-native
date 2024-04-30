@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-dependencies:
-  node-native-messaging-host:
-    specifier: ^1.0.5
-    version: 1.0.5
-
 devDependencies:
   '@types/node':
     specifier: ^20.1.7
@@ -260,10 +255,6 @@ packages:
       '@esbuild/win32-ia32': 0.17.19
       '@esbuild/win32-x64': 0.17.19
     dev: true
-
-  /node-native-messaging-host@1.0.5:
-    resolution: {integrity: sha512-1/lT5Bs6M9q1qeoQIozqeGMNeGGLafBO7S1Iz6/ZVTEfWMyVKIzDWe+zKziAV9Oic5Ktv6EBphh+LB24280mkw==}
-    dev: false
 
   /typescript@5.0.4:
     resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
