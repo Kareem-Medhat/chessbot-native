@@ -47,13 +47,9 @@ function waitForMatchStart(sidebar: HTMLElement) {
 }
 
 function moveFromNode(node: HTMLElement) {
-	if (node.childNodes.length > 1) {
-		return Array.from(node.childNodes).map((node) => {
-			return node instanceof HTMLElement ? node.dataset.figurine : node.nodeValue;
-		}).join("");
-	}
+  const figurine = node.querySelector("[data-figurine]") as HTMLElement | null;
 
-	return node.innerText;
+	return (figurine ? figurine.dataset.figurine : '') + node.innerText;
 }
 
 function readMoves(sidebar: HTMLElement): {
