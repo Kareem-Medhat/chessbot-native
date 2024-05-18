@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Chessbot",
   "description": "Don't play chess",
-  "version": "0.0.1",
+  "version": "1.0",
   "action": {
     "default_title": "Toggle bot"
   },

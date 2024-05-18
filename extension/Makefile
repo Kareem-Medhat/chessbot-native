@@ -1,4 +1,5 @@
-build: dist/build dist/icons dist/manifest.json
+pack: dist/build dist/icons dist/manifest.json
+	chromium --pack-extension=./dist
 
 dist/build:
 	npm run build
