@@ -60,10 +60,10 @@ function readMoves(sidebar: HTMLElement): {
   pgn: string;
   nextTurn: "black" | "white";
 } {
-  const moves = sidebar.querySelector("wc-vertical-move-list");
+  const moves = sidebar.querySelectorAll("wc-vertical-move-list div[data-whole-move-number]");
   let pgn = "";
   let nextTurn: "black" | "white" = "white";
-  for (const move of moves?.children || []) {
+  for (const move of moves) {
     const moveNumber = (move as HTMLElement).dataset.wholeMoveNumber;
     let [white, black] = move.querySelectorAll(".node");
 

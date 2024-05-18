@@ -1,9 +1,1 @@
-{
-  "name": "com.chessbot.native",
-  "description": "Chessbot",
-  "path": "@BOT_PATH@",
-  "type": "stdio",
-  "allowed_origins": [
-    "chrome-extension://oglpekofjjaecmkfjmmmjkljebdbonac/"
-  ]
-}
+
