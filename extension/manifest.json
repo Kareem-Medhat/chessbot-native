@@ -7,12 +7,12 @@
     "default_title": "Toggle bot"
   },
   "background": {
-    "service_worker": "dist/client/background.js"
+    "service_worker": "build/background.js"
   },
   "content_scripts": [
     {
       "js": [
-        "dist/client/content.js"
+        "build/content.js"
       ],
       "matches": [
         "https://www.chess.com/play/computer",
