@@ -4,17 +4,16 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run build -- --watch",
-    "build": "swc ./src --out-dir dist/build --strip-leading-paths"
+    "content": "esbuild --bundle src/content.ts --outdir=dist/build --minify",
+    "background": "esbuild --bundle src/background.ts --outdir=dist/build --minify"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@swc/cli": "^0.3.12",
-    "@swc/core": "^1.5.7",
     "@types/node": "^20.1.7",
     "chokidar": "^3.6.0",
-    "chrome-types": "^0.1.194"
+    "chrome-types": "^0.1.194",
+    "esbuild": "^0.21.3"
   }
 }
