@@ -1,6 +1,9 @@
 pack: dist/build/content.js dist/build/background.js dist/icons dist/manifest.json
 	chromium --pack-extension=./dist
 
+clean-unsafe:
+	rm -rf dist dist.crx dist.pem
+
 dist/build/content.js: src/content.ts
 	npm run content
 
