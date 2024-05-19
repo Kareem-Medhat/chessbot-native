@@ -49,7 +49,7 @@ function waitForMatchStart(sidebar: HTMLElement) {
 function moveFromNode(node: HTMLElement) {
   const figurine = node.querySelector("[data-figurine]") as HTMLElement | null;
 
-	return (figurine ? figurine.dataset.figurine : '') + node.innerText;
+	return (figurine ? figurine.dataset.figurine : '') + node.innerText.trim();
 }
 
 function readMoves(sidebar: HTMLElement): {
