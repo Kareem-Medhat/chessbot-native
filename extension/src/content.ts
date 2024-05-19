@@ -101,7 +101,7 @@ async function start(sidebar: HTMLElement) {
         type: "SWITCH_OFF",
       });
     } else if (
-      mut.some((m) => (m.target as HTMLElement).classList.contains("move"))
+      mut.some((m) => (m.target as HTMLElement).classList.contains("node"))
     ) {
       const moves = readMoves(sidebar);
       if ((moves.nextTurn === "white") === isWhite) {
