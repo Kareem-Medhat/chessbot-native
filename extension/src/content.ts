@@ -6,6 +6,8 @@ import { waitForElement } from "./wait-for-element";
 const port = initPort();
 const indicator = new MoveIndicator();
 
+const moveListSelector = "wc-vertical-move-list, wc-move-list";
+
 const clearBoard = (board: HTMLElement) => {
   const highlighted = board.querySelector(".made-by-bot") as HTMLElement | null;
   if (highlighted) {
@@ -16,13 +18,13 @@ const clearBoard = (board: HTMLElement) => {
 };
 
 function didMatchStart(sidebar: HTMLElement) {
-  return !!sidebar.querySelector("wc-vertical-move-list");
+  return !!sidebar.querySelector(moveListSelector);
 }
 
 function didMatchEnd(sidebar: HTMLElement): Element | false {
   return (
     didMatchStart(sidebar) &&
-    (sidebar.querySelector("wc-vertical-move-list .game-result") || false)
+    (sidebar.querySelector(`:is(${moveListSelector}) .game-result`) || false)
   );
 }
 
@@ -56,7 +58,7 @@ function readMoves(sidebar: HTMLElement): {
   pgn: string;
   nextTurn: "black" | "white";
 } {
-  const moves = sidebar.querySelectorAll("div[data-whole-move-number]");
+  const moves = sidebar.querySelectorAll(`:is(${moveListSelector}) div[data-whole-move-number]`);
   let pgn = "";
   let nextTurn: "black" | "white" = "white";
   for (const move of moves) {
@@ -166,9 +168,7 @@ function showMove(message: { move: string }) {
   const highlight = document.createElement("div");
   highlight.classList.add("highlight", className, "made-by-bot");
   highlight.style.backgroundColor = "rgb(0, 255, 0)";
-  // highlight.style.backgroundColor = "rgb(235, 97, 80)";
   highlight.style.opacity = "1";
-  // svg.insertAdjacentElement("afterend", highlight);
   chessBoard.insertBefore(highlight, chessBoard.childNodes[2]);
 
   const { width: pieceWidth, height: pieceHeight } =
