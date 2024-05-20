@@ -56,7 +56,7 @@ function readMoves(sidebar: HTMLElement): {
   pgn: string;
   nextTurn: "black" | "white";
 } {
-  const moves = sidebar.querySelectorAll("wc-vertical-move-list div[data-whole-move-number]");
+  const moves = sidebar.querySelectorAll("div[data-whole-move-number]");
   let pgn = "";
   let nextTurn: "black" | "white" = "white";
   for (const move of moves) {
