@@ -1,7 +1,0 @@
-{
-  "name": "com.chessbot.native",
-  "description": "Chessbot",
-  "path": "@PATH@",
-  "type": "stdio",
-  "allowed_extensions": ["chessbot@kareem.com"]
-}

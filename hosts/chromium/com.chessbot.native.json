@@ -1,7 +1,7 @@
 {
   "name": "com.chessbot.native",
   "description": "Chessbot",
-  "path": "/home/kareem/Playground/chessbot/backend/target/release/chess_bot",
+  "path": "@command_path@",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://faobhfdhdkngcelkmedkpjjpkmhmienc/"
